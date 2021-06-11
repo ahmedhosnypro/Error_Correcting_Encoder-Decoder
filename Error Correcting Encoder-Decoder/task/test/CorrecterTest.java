@@ -3,6 +3,7 @@ import org.hyperskill.hstest.stage.StageTest;
 import org.hyperskill.hstest.testcase.TestCase;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 class TestClue {
@@ -14,7 +15,6 @@ class TestClue {
 }
 
 public class CorrecterTest extends StageTest<TestClue> {
-
 
     @Override
     public List<TestCase<TestClue>> generate() {
@@ -37,12 +37,49 @@ public class CorrecterTest extends StageTest<TestClue> {
 
     @Override
     public CheckResult check(String reply, TestClue clue) {
-        String cleanedReply = reply.trim().replaceAll("\\n", "");
-        return checkMatches(cleanedReply, clue.input);
+        List<String> splitReply = Arrays.asList(reply.strip().split("\\n"));
+
+        if (splitReply.size() != 4) {
+            return new CheckResult(false,
+                "Your program should output 4 lines, found: " + splitReply.size());
+        }
+
+        String initialLine = splitReply.get(0);
+        String stretched = splitReply.get(1);
+        String received = splitReply.get(2);
+        String decoded = splitReply.get(3);
+
+
+        if (!initialLine.equals(clue.input)) {
+            return new CheckResult(false,
+                "First line of output should be an input reference!");
+        }
+
+        if (!stretched.equals(stretchString(initialLine))) {
+            return new CheckResult(false,
+                "Text before sending is encoded incorrectly!");
+        }
+
+        if (!decoded.equals(initialLine)) {
+            return new CheckResult(false,
+                "Decoding result not match required! Make sure the program works correctly!");
+        }
+
+        return checkMatches(received, stretched);
+    }
+
+    private static String stretchString(String target) {
+        char[] resultChars = target.toCharArray();
+        char[] result = new char[resultChars.length * 3];
+        for (int i = 0; i < result.length; i++) {
+            result[i] = resultChars[i / 3];
+        }
+
+        return new String(result);
     }
 
     private CheckResult checkMatches(String userOutput,
-                                 String correctOutput) {
+                                     String correctOutput) {
 
         if (userOutput.length() != correctOutput.length()) {
             return new CheckResult(false,
@@ -74,11 +111,10 @@ public class CorrecterTest extends StageTest<TestClue> {
             if (errors != 1) {
                 return new CheckResult(false,
                     "One of the triples contain "
-                        + errors + " errors, but it should always be 1 error");
+                        + errors + " errors, but every triple should always contain 1 error");
             }
         }
 
         return CheckResult.correct();
     }
 }
-

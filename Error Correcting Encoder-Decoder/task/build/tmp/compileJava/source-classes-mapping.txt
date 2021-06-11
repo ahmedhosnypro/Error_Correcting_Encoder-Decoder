@@ -1,4 +1,8 @@
 correcter/ErrorEmulator.java
  correcter.ErrorEmulator
+correcter/Coder.java
+ correcter.Coder
+correcter/Decoder.java
+ correcter.Decoder
 correcter/Main.java
  correcter.Main

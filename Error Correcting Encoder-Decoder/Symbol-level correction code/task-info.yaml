@@ -136,6 +136,49 @@ files:
         }
     }
   learner_created: false
+- name: src/correcter/ErrorEmulator.java
+  visible: true
+  text: |
+    package correcter;
+
+    import java.util.Random;
+    import java.util.Scanner;
+
+    public class ErrorEmulator {
+        static String createErrors(String input){
+            final String randomList = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            final int N = randomList.length();
+
+            char[] chars = input.toCharArray();
+            Random random = new Random();
+            int l = chars.length;
+            for (int i = 0; i < l - 2; i += 3){
+                int j = random.nextInt(2);
+
+                while (true){
+                    char ch = randomList.charAt(random.nextInt(N));
+                    if (chars[i + j] != ch){
+                        chars[i + j] = ch;
+                        break;
+                    }
+                }
+
+            }
+
+            return new String(chars);
+        }
+
+    }
+  learner_created: true
+- name: src/correcter/Coder.java
+  visible: true
+  learner_created: true
+- name: src/correcter/Decoder.java
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/58/stages/313/implement#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Fri, 11 Jun 2021 15:16:53 UTC
 record: -1
