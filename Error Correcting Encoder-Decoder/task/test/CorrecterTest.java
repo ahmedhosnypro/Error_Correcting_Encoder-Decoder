@@ -2,8 +2,7 @@ import org.hyperskill.hstest.testcase.CheckResult;
 import org.hyperskill.hstest.stage.StageTest;
 import org.hyperskill.hstest.testcase.TestCase;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.io.*;
 import java.util.List;
 
 class TestClue {
@@ -16,105 +15,133 @@ class TestClue {
 
 public class CorrecterTest extends StageTest<TestClue> {
 
+    public static File received = null;
+
     @Override
     public List<TestCase<TestClue>> generate() {
-        TestClue[] testClues = new TestClue[]{
-            new TestClue("Some text to test"),
-            new TestClue("send message to user with id #42354"),
-            new TestClue("thq")
-        };
+        TestClue firstTestClue = new TestClue("Eat more of these french buns!");
+        TestClue secondTestClue = new TestClue("$ome rand0m messAge");
+        TestClue thirdTestClue = new TestClue("better call Saul 555-00-73!");
+        TestClue sixthTestClue = new TestClue("5548172 6548 225147 23656595 5155");
 
-        List<TestCase<TestClue>> result = new ArrayList<>();
+        return List.of(
+            new TestCase<TestClue>()
+                .setAttach(firstTestClue)
+                .addFile("send.txt", firstTestClue.input),
 
-        for (int i = 0; i < testClues.length; i++) {
-            result.add(new TestCase<TestClue>()
-                .setAttach(testClues[i])
-                .setInput(testClues[i].input));
-        }
+            new TestCase<TestClue>()
+                .setAttach(secondTestClue)
+                .addFile("send.txt", secondTestClue.input),
 
-        return result;
+            new TestCase<TestClue>()
+                .setAttach(thirdTestClue)
+                .addFile("send.txt", thirdTestClue.input),
+
+            new TestCase<TestClue>()
+                .setAttach(sixthTestClue)
+                .addFile("send.txt", sixthTestClue.input)
+        );
     }
 
     @Override
     public CheckResult check(String reply, TestClue clue) {
-        List<String> splitReply = Arrays.asList(reply.strip().split("\\n"));
+        String path = System.getProperty("user.dir");
+        searchFile("received.txt");
 
-        if (splitReply.size() != 4) {
+        if (received == null) {
             return new CheckResult(false,
-                "Your program should output 4 lines, found: " + splitReply.size());
+                "Can't find received.txt file. " +
+                    "Make sure your program writes it down or " +
+                    "make sure the name of the file is correct.");
         }
 
-        String initialLine = splitReply.get(0);
-        String stretched = splitReply.get(1);
-        String received = splitReply.get(2);
-        String decoded = splitReply.get(3);
+        byte[] receivedContent;
 
-
-        if (!initialLine.equals(clue.input)) {
+        FileInputStream stream;
+        try {
+            stream = new FileInputStream(received);
+        } catch (FileNotFoundException e) {
             return new CheckResult(false,
-                "First line of output should be an input reference!");
+                "Can't find received.txt file. " +
+                    "Make sure your program writes it down " +
+                    "or make sure the name of the file is correct.");
         }
 
-        if (!stretched.equals(stretchString(initialLine))) {
-            return new CheckResult(false,
-                "Text before sending is encoded incorrectly!");
+        try {
+            receivedContent = stream.readAllBytes();
+        } catch (IOException e) {
+            throw new RuntimeException("Can't read the file");
         }
 
-        if (!decoded.equals(initialLine)) {
-            return new CheckResult(false,
-                "Decoding result not match required! Make sure the program works correctly!");
-        }
+        String correctBinary = toBinary(clue.input.getBytes());
+        String outputBinary = toBinary(receivedContent);
 
-        return checkMatches(received, stretched);
+        return checkMatches(outputBinary, correctBinary);
     }
 
-    private static String stretchString(String target) {
-        char[] resultChars = target.toCharArray();
-        char[] result = new char[resultChars.length * 3];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = resultChars[i / 3];
+    private static String toBinary(byte[] bytes) {
+        StringBuilder sb = new StringBuilder(bytes.length * Byte.SIZE);
+        for (int i = 0; i < Byte.SIZE * bytes.length; i++) {
+            sb.append((bytes[i / Byte.SIZE] << i % Byte.SIZE & 0x80) == 0 ? '0' : '1');
         }
-
-        return new String(result);
+        return sb.toString();
     }
 
-    private CheckResult checkMatches(String userOutput,
-                                     String correctOutput) {
+    private static byte[] fromBinary(String s) {
+        int sLen = s.length();
+        byte[] toReturn = new byte[(sLen + Byte.SIZE - 1) / Byte.SIZE];
+        char c;
+        for (int i = 0; i < sLen; i++)
+            if ((c = s.charAt(i)) == '1')
+                toReturn[i / Byte.SIZE] = (byte) (toReturn[i / Byte.SIZE] | (0x80 >>> (i % Byte.SIZE)));
+            else if (c != '0')
+                throw new IllegalArgumentException();
+        return toReturn;
+    }
 
-        if (userOutput.length() != correctOutput.length()) {
+    private CheckResult checkMatches(String output, String correct) {
+        if (output.isEmpty() && correct.isEmpty()) return CheckResult.correct();
+
+        if (output.length() != correct.length()) {
             return new CheckResult(false,
-                "Input length and output length should be the same!\n" +
-                    "Input length: " + correctOutput.length() +
-                    "Output length: " + userOutput.length());
+                "The program was expected to output " +
+                    correct.length() / 8 +
+                    " bytes, but output " +
+                    output.length() / 8);
         }
 
-        for (int i = 0; i < userOutput.length(); i+=3) {
+        for (int i = 0; i < output.length(); i += 8) {
+            String currOutputByte = output.substring(i, i+8);
+            String currCorrectByte = correct.substring(i, i+8);
 
-            int from = i;
-            int to = Math.min(i+3, userOutput.length());
+            int difference = 0;
+            for (int j = 0; j < currCorrectByte.length(); j++) {
+                char currOutputBit = currOutputByte.charAt(j);
+                char currCorrectBit = currCorrectByte.charAt(j);
 
-            String currUserPart = userOutput.substring(from, to);
-            String currCorrectPart = correctOutput.substring(from, to);
-
-            if (currUserPart.length() != 3) {
-                break;
-            }
-
-            int errors = 0;
-
-            for (int j = 0; j < currUserPart.length(); j++) {
-                if (currUserPart.charAt(j) != currCorrectPart.charAt(j)) {
-                    errors++;
+                if (currCorrectBit != currOutputBit) {
+                    difference++;
                 }
             }
 
-            if (errors != 1) {
+            if (difference == 0) {
                 return new CheckResult(false,
-                    "One of the triples contain "
-                        + errors + " errors, but every triple should always contain 1 error");
+                    "One of bytes from the input stayed the same but should be changed");
+            }
+
+            if (difference != 1) {
+                return new CheckResult(false,
+                    "One of bytes from the input was changes in more than one bit");
             }
         }
 
         return CheckResult.correct();
+    }
+
+    public static void searchFile(String fileName) {
+        File file = new File(fileName);
+        if (file.exists()) {
+            received = file;
+        }
     }
 }
