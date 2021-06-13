@@ -27,7 +27,7 @@ public class CorrecterTest extends StageTest<TestClue> {
 
     @Override
     public List<TestCase<TestClue>> generate() {
-        TestClue[] testClues = new TestClue[] {
+        TestClue[] testClues = new TestClue[]{
             new TestClue("encode", "Eat more of these french buns!"),
             new TestClue("send",   "Eat more of these french buns!"),
             new TestClue("decode", "Eat more of these french buns!"),
@@ -77,7 +77,6 @@ public class CorrecterTest extends StageTest<TestClue> {
         if (action.equals("encode")) {
 
             if (encoded == null) {
-                System.out.println("here1");
                 return new CheckResult(false,
                     "Can't find encoded.txt file. " +
                         "Make sure your program writes it down or " +
@@ -90,9 +89,8 @@ public class CorrecterTest extends StageTest<TestClue> {
             try {
                 encodedStream = new FileInputStream(encoded);
             } catch (FileNotFoundException e) {
-                System.out.println("here2");
                 return new CheckResult(false,
-                    "Can't find encoded.txt file. " +
+                    "Can't find received.txt file. " +
                         "Make sure your program writes it down or " +
                         "make sure the name of file is correct.");
             }
@@ -101,7 +99,6 @@ public class CorrecterTest extends StageTest<TestClue> {
                 encodedContent = encodedStream.readAllBytes();
             } catch (IOException e) {
                 e.printStackTrace();
-                System.out.println("here3");
                 throw new RuntimeException("Can't read the file");
             }
 
@@ -234,50 +231,53 @@ public class CorrecterTest extends StageTest<TestClue> {
 
         String encoded = "";
 
-        for (int i = 0; i < binaryString.length(); i += 3) {
+        for (int i = 0; i < binaryString.length(); i += 4) {
+
+            if (i + 4 > binaryString.length()) {
+                throw new RuntimeException("Can't decode binary data");
+            }
 
             int startSubIndex = i;
-            int stopSubIndex = Math.min(i+3, binaryString.length());
+            int stopSubIndex = i + 4;
 
             String currSub = binaryString.substring(startSubIndex, stopSubIndex);
 
             String encodedPart;
 
-            if (currSub.length() == 3) {
-                encodedPart =
-                    currSub.substring(0, 1).repeat(2) +
-                    currSub.substring(1, 2).repeat(2) +
-                    currSub.substring(2, 3).repeat(2);
-            } else if (currSub.length() == 2) {
-                encodedPart =
-                    currSub.substring(0, 1).repeat(2) +
-                    currSub.substring(1, 2).repeat(2) + "00";
-            } else if (currSub.length() == 1) {
-                encodedPart =
-                    currSub.substring(0, 1).repeat(2) + "0000";
-            } else {
-                encodedPart = "000000";
+            int parityBit1 = 0;
+            int parityBit2 = 0;
+            int parityBit4 = 0;
+
+            if (currSub.charAt(0) == '1') {
+                parityBit1++;
+                parityBit2++;
             }
 
-            int parityCounts = 0;
-
-            if (encodedPart.charAt(0) == '1') {
-                parityCounts++;
+            if (currSub.charAt(1) == '1') {
+                parityBit1++;
+                parityBit4++;
             }
 
-            if (encodedPart.charAt(2) == '1') {
-                parityCounts++;
+            if (currSub.charAt(2) == '1') {
+                parityBit2++;
+                parityBit4++;
             }
 
-            if (encodedPart.charAt(4) == '1') {
-                parityCounts++;
+            if (currSub.charAt(3) == '1') {
+                parityBit1++;
+                parityBit2++;
+                parityBit4++;
             }
 
-            if (parityCounts % 2 == 1) {
-                encodedPart += "11";
-            } else {
-                encodedPart += "00";
-            }
+            encodedPart =
+                (parityBit1 % 2 == 1? "1": "0") +
+                (parityBit2 % 2 == 1? "1": "0") +
+                currSub.charAt(0) +
+                (parityBit4 % 2 == 1? "1": "0") +
+                currSub.charAt(1) +
+                currSub.charAt(2) +
+                currSub.charAt(3) +
+                "0";
 
             encoded += encodedPart;
         }

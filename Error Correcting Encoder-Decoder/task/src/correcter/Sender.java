@@ -8,13 +8,9 @@ import static correcter.Decoder.*;
 import static correcter.ErrorEmulator.*;
 
 public class Sender {
-    static void send(){
-        File encodedFile = new File("encoded.txt");
-//        File encodedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/encoded.txt");
-//        File receivedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/received.txt");
-        File receivedFile = new File("received.txt");
+    static void send(File encodedFile, File receivedFile){
         try(FileInputStream encodedFileInputStream = new FileInputStream(encodedFile);
-            FileOutputStream receivedFileOutputStream = new FileOutputStream(receivedFile);) {
+            FileOutputStream receivedFileOutputStream = new FileOutputStream(receivedFile)) {
 
             //read encodedFile
             //**************************//

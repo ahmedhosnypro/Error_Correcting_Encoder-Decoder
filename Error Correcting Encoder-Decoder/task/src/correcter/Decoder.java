@@ -6,17 +6,114 @@ import java.util.ArrayList;
 import static correcter.Encoder.*;
 
 public class Decoder {
-    public static void decode(){
-//        File receivedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/received.txt");
-        File receivedFile = new File("received.txt");
-//        File decodedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/decoded.txt");
-        File decodedFile = new File("decoded.txt");
-        try(FileInputStream receivedFileInputStream = new FileInputStream(receivedFile);
-            FileOutputStream decodedFileOutputStream = new FileOutputStream(decodedFile);){
+
+    //edit this
+    public static void decodeHamming(File receivedFile, File decodedFile) {
+        try (FileInputStream receivedFileInputStream = new FileInputStream(receivedFile);
+             FileOutputStream decodedFileOutputStream = new FileOutputStream(decodedFile)) {
 
             //read encodedFile
             //**************************//
-            byte[] receivedBytes  = receivedFileInputStream.readAllBytes();
+            byte[] receivedBytes = receivedFileInputStream.readAllBytes();
+            //**************************//
+
+            ArrayList<String> receivedHex = toHexArray(receivedBytes);
+            ArrayList<String> receivedBits = toBitsArray(receivedBytes);
+
+            ///*
+            System.out.println(receivedFile.getName() + ":");
+            System.out.print("hex view: ");
+            receivedHex.forEach(s -> System.out.print(s + " "));
+            System.out.println();
+            System.out.print("bin view: ");
+            receivedBits.forEach(s -> System.out.print(s + " "));
+            System.out.println();
+            System.out.println();
+            //*/
+
+            //decode received file
+            ArrayList<String> decodedBits = decodeHamming(receivedBits);
+            byte[] decodedBytes = bitsToBytes(decodedBits);
+            ArrayList<String> decodedHex = toHexArray(decodedBytes);
+
+            ///*
+            System.out.println(decodedFile.getName() + ":");
+            System.out.print("correct: ");
+            decodedBits.forEach(s -> System.out.print(s + " "));
+            System.out.println();
+            System.out.print("hex view: ");
+            decodedHex.forEach(s -> System.out.print(s + " "));
+            System.out.println();
+            System.out.println("text view: " + bytesToString(decodedBytes));
+            //*/
+
+            //**************************//
+            decodedFileOutputStream.write(bitsToBytes(decodedBits));
+            //**************************//
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static ArrayList<String> decodeHamming(ArrayList<String> bits) {
+        ArrayList<String> output = new ArrayList<>();
+        StringBuilder out = new StringBuilder();
+
+        for (String B : bits) {
+            int p1 = B.charAt(0) - 48;
+            int p2 = B.charAt(1) - 48;
+            int d3 = B.charAt(2) - 48;
+            int p4 = B.charAt(3) - 48;
+            int d5 = B.charAt(4) - 48;
+            int d6 = B.charAt(5) - 48;
+            int d7 = B.charAt(6) - 48;
+
+            int errorPosition = 0;
+            if ((d3 ^ d5 ^ d7) != p1) {
+                errorPosition++;
+            }
+            if ((d3 ^ d6 ^ d7) != p2) {
+                errorPosition += 2;
+            }
+            if ((d5 ^ d6 ^ d7) != p4) {
+                errorPosition += 4;
+            }
+            switch (errorPosition) {
+                case 3:
+                    d3 ^= 1;
+                    break;
+                case 5:
+                    d5 ^= 1;
+                    break;
+                case 6:
+                    d6 ^= 1;
+                    break;
+                case 7:
+                    d7 ^= 1;
+                    break;
+                default:
+                    break;
+            }
+            if (out.length() == 8) {
+                output.add(out.toString());
+                out = new StringBuilder();
+            }
+            out.append(d3).append(d5).append(d6).append(d7);
+        }
+
+        if (out.length() == 8) {
+            output.add(out.toString());
+        }
+        return output;
+    }
+
+    public static void decode(File receivedFile, File decodedFile) {
+        try (FileInputStream receivedFileInputStream = new FileInputStream(receivedFile);
+             FileOutputStream decodedFileOutputStream = new FileOutputStream(decodedFile)) {
+
+            //read encodedFile
+            //**************************//
+            byte[] receivedBytes = receivedFileInputStream.readAllBytes();
             //**************************//
 
             ArrayList<String> receivedHex = toHexArray(receivedBytes);
@@ -47,7 +144,7 @@ public class Decoder {
             decodedHex.forEach(s -> System.out.print(s + " "));
             System.out.println();
             System.out.println("text view: " + bytesToString(decodedBytes));
-             //*/
+            //*/
 
             //**************************//
             decodedFileOutputStream.write(bitsToBytes(decodedBits));
@@ -58,25 +155,11 @@ public class Decoder {
     }
 
     public static ArrayList<String> decode(ArrayList<String> bits) {
-        ArrayList<String> output = new ArrayList<String>();
-
-        int S = bits.size();
-        int remainder = -1;
-        if (S % 8 == 0)
-            remainder = 0;
-        else if (S % 2 == 0)
-            remainder = 1;
-        else
-            remainder = 2;
-
-        int bound = 0;
-        if (remainder > 0)
-            bound = 1;
+        ArrayList<String> output = new ArrayList<>();
 
         StringBuilder out = new StringBuilder();
 
-        for (int s = 0; s < bits.size()/*-bound*/; s++) {
-            String B = bits.get(s);
+        for (String B : bits) {
             for (int i = 0; i < B.length() - 2; i += 2) {
                 if (B.charAt(i) != B.charAt(i + 1)) {
                     int n1 = B.charAt(0) - 48;
