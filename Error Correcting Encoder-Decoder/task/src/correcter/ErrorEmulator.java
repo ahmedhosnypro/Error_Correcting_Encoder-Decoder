@@ -4,6 +4,27 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ErrorEmulator {
+    static ArrayList<String> createErrors(ArrayList<String> input) {
+        Random random = new Random();
+        ArrayList<String> output = new ArrayList<>();
+        String[] strings = input.toArray(new String[0]);
+        for (String s : strings) {
+            char[] chars = s.toCharArray();
+
+            int i = random.nextInt(8);
+            while (true){
+                char randomBit = (char) (random.nextInt(2) + 48);
+                if (chars[i] != randomBit){
+                    chars[i] = randomBit;
+                    break;
+                }
+            }
+            output.add(new String(chars));
+        }
+
+        return output;
+    }
+
     static String createErrors(String input) {
         final String randomList = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         final int N = randomList.length();
@@ -25,26 +46,5 @@ public class ErrorEmulator {
         }
 
         return new String(chars);
-    }
-
-    static ArrayList<String> createErrors(ArrayList<String> input) {
-        Random random = new Random();
-        ArrayList<String> output = new ArrayList<>();
-        String[] strings = input.toArray(new String[0]);
-        for (String s : strings) {
-            char[] chars = s.toCharArray();
-
-            int i = random.nextInt(7) + 1;
-            while (true){
-                char randomBit = (char) (random.nextInt(2) + 48);
-                if (chars[i] != randomBit){
-                    chars[i] = randomBit;
-                    break;
-                }
-            }
-            output.add(new String(chars));
-        }
-
-        return output;
     }
 }

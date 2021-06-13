@@ -343,6 +343,162 @@ files:
     }
 
   learner_created: false
+- name: src/correcter/send.txt
+  visible: true
+  text: Simple text.
+  learner_created: true
+- name: src/correcter/ErrorEmulator.java
+  visible: true
+  text: |-
+    package correcter;
+
+    import java.util.*;
+    import java.util.stream.Collectors;
+
+    public class ErrorEmulator {
+        static String createErrors(String input) {
+            final String randomList = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            final int N = randomList.length();
+
+            char[] chars = input.toCharArray();
+            Random random = new Random();
+            int l = chars.length;
+            for (int i = 0; i < l - 2; i += 3) {
+                int j = random.nextInt(2);
+
+                while (true) {
+                    char ch = randomList.charAt(random.nextInt(N));
+                    if (chars[i + j] != ch) {
+                        chars[i + j] = ch;
+                        break;
+                    }
+                }
+
+            }
+
+            return new String(chars);
+        }
+
+        static ArrayList<String> createErrors(ArrayList<String> input) {
+            Random random = new Random();
+            ArrayList<String> output = new ArrayList<>();
+            String[] strings = input.toArray(new String[0]);
+            for (String s : strings) {
+                char[] chars = s.toCharArray();
+
+                int i = random.nextInt(7) + 1;
+                while (true){
+                    char randomBit = (char) (random.nextInt(2) + 48);
+                    if (chars[i] != randomBit){
+                        chars[i] = randomBit;
+                        break;
+                    }
+                }
+                output.add(new String(chars));
+            }
+
+            return output;
+        }
+    }
+  learner_created: true
+- name: src/correcter/FileReceiver.java
+  visible: true
+  text: |
+    package correcter;
+
+    import java.io.*;
+    import java.util.ArrayList;
+    import java.util.Arrays;
+    import java.util.List;
+    import java.util.Scanner;
+    import java.util.stream.Collectors;
+
+    public class FileReceiver {
+
+
+    }
+  learner_created: true
+- name: src/correcter/Decoder.java
+  visible: true
+  text: |
+    package correcter;
+
+    import java.util.ArrayList;
+
+    public class Decoder {
+        static String decode(String badString){
+            char[] chars = badString.toCharArray();
+            StringBuilder sb = new StringBuilder();
+            for (int i = 1; i < chars.length - 1; i += 3){
+                if (chars[i] == chars[i + 1]){
+                    sb.append(chars[i + 1]);
+                }
+                else if (chars[i] == chars[i - 1]){
+                    sb.append(chars[i - 1]);
+                }
+                else if (chars[i - 1] == chars[i + 1]){
+                    sb.append(chars[i - 1]);
+                }
+
+            }
+
+            return sb.toString();
+        }
+
+        static byte[] bitsToBytes(ArrayList<String> input){
+            byte[] bytes = new byte[input.size()];
+            for (int i=0; i<input.size(); i++){
+                String string = input.get(i);
+                int l = Integer.parseInt(string);
+                bytes[i] = Byte.parseByte(string, 2);
+            }
+            return bytes;
+        }
+
+        static String bytesToString(byte[] bytes){
+            StringBuilder sb = new StringBuilder();
+            for (byte b: bytes){
+                sb.append(b).append(" ");
+            }
+
+            return sb.toString().trim();
+        }
+    }
+  learner_created: true
+- name: received.txt
+  visible: true
+  text: "14t9qw:!7%6\x18\03\"7\x11$5`:;\x16771y1\"=01u"
+  learner_created: true
+- name: src/correcter/received.txt
+  visible: true
+  learner_created: true
+- name: src/correcter/Encoder.java
+  visible: true
+  learner_created: true
+- name: src/correcter/encoded.txt
+  visible: true
+  learner_created: true
+- name: src/correcter/Mode.java
+  visible: true
+  learner_created: true
+- name: src/correcter/Starter.java
+  visible: true
+  learner_created: true
+- name: src/correcter/Sender.java
+  visible: true
+  learner_created: true
+- name: src/correcter/decoded.txt
+  visible: true
+  learner_created: true
+- name: decoded.txt
+  visible: true
+  learner_created: true
+- name: encoded.txt
+  visible: true
+  learner_created: true
 feedback_link: https://hyperskill.org/projects/58/stages/315/implement#comment
-status: Unchecked
+status: Solved
+feedback:
+  message: Congratulations!
+  time: Sun, 13 Jun 2021 13:39:23 UTC
 record: -1

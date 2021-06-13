@@ -1,10 +1,17 @@
-correcter/Coder.java
- correcter.Coder
 correcter/FileReceiver.java
  correcter.FileReceiver
+correcter/Mode.java
+ correcter.Mode
+correcter/Main.java
+ correcter.Main
+correcter/Starter.java
+ correcter.Starter
+ correcter.Starter$1
+correcter/Encoder.java
+ correcter.Encoder
 correcter/Decoder.java
  correcter.Decoder
 correcter/ErrorEmulator.java
  correcter.ErrorEmulator
-correcter/Main.java
- correcter.Main
+correcter/Sender.java
+ correcter.Sender
