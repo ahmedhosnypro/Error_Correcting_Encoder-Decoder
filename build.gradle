@@ -1,14 +1,26 @@
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-}
+apply plugin: 'hyperskill'
 
 subprojects {
     apply plugin: 'application'
     apply plugin: 'java'
 
-    sourceCompatibility = 11
+    def userJava = Integer.parseInt(JavaVersion.current().getMajorVersion())
+    def hsJava = Integer.parseInt(hs.java.version)
+    def testJava = Math.max(userJava, hsJava)
+
+    java.toolchain.languageVersion = JavaLanguageVersion.of(testJava)
+
+    compileJava {
+        javaCompiler = javaToolchains.compilerFor {
+            languageVersion = JavaLanguageVersion.of(userJava)
+        }
+    }
+
+    compileTestJava {
+        javaCompiler = javaToolchains.compilerFor {
+            languageVersion = JavaLanguageVersion.of(testJava)
+        }
+    }
 
     repositories {
         mavenCentral()
@@ -31,16 +43,6 @@ subprojects {
     test {
         systemProperty "file.encoding", "utf-8"
         outputs.upToDateWhen { false }
-        afterTest { TestDescriptor test, TestResult result ->
-            if (result.resultType == TestResult.ResultType.FAILURE) {
-                def message = result.exception?.message ?: "Wrong answer"
-                def lines = message.readLines()
-                println "#educational_plugin FAILED + " + lines[0]
-                lines[1..-1].forEach { line ->
-                    println "#educational_plugin" + line
-                }
-            }
-        }
     }
 
     compileJava.options.encoding = 'utf-8'
@@ -49,6 +51,19 @@ subprojects {
     }
 }
 
+project(':util') {
+    dependencies {
+        implementation 'com.github.hyperskill:hs-test:release-SNAPSHOT'
+    }
+}
+
+configure(subprojects.findAll {it.name != 'util'}) {
+    dependencies {
+        testImplementation project(':util').sourceSets.main.output
+        testImplementation project(':util').sourceSets.test.output
+    }
+}
+
 wrapper {
-    gradleVersion = '6.6.1'
+    gradleVersion = hs.gradle.version
 }

@@ -8,13 +8,13 @@ import static correcter.Decoder.*;
 import static correcter.ErrorEmulator.*;
 
 public class Sender {
-    static void send(File encodedFile, File receivedFile){
-        try(FileInputStream encodedFileInputStream = new FileInputStream(encodedFile);
-            FileOutputStream receivedFileOutputStream = new FileOutputStream(receivedFile)) {
+    static void send(File encodedFile, File receivedFile) {
+        try (FileInputStream encodedFileInputStream = new FileInputStream(encodedFile);
+             FileOutputStream receivedFileOutputStream = new FileOutputStream(receivedFile)) {
 
             //read encodedFile
             //**************************//
-            byte[] encodedBytes  = encodedFileInputStream.readAllBytes();
+            byte[] encodedBytes = encodedFileInputStream.readAllBytes();
             //**************************//
 
             ArrayList<String> encodedHex = toHexArray(encodedBytes);

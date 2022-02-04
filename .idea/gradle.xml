@@ -8,15 +8,30 @@
         <option name="testRunner" value="GRADLE" />
         <option name="distributionType" value="WRAPPED" />
         <option name="externalProjectPath" value="$PROJECT_DIR$" />
+        <option name="gradleJvm" value="#JAVA_INTERNAL" />
         <option name="modules">
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Error Correcting Encoder-Decoder/task" />
-            <option value="$PROJECT_DIR$/Topics/Getters and setters/Account" />
-            <option value="$PROJECT_DIR$/Topics/Getters and setters/Book" />
-            <option value="$PROJECT_DIR$/Topics/Getters and setters/Complex" />
-            <option value="$PROJECT_DIR$/Topics/Getters and setters/Getting the fullname" />
-            <option value="$PROJECT_DIR$/Topics/Getters and setters/Theory" />
+            <option value="$PROJECT_DIR$/Error Correcting Encoder-Decoder/task/build/classes/java" />
+            <option value="$PROJECT_DIR$/Error Correcting Encoder-Decoder/task/build/generated/sources/annotationProcessor/java" />
+            <option value="$PROJECT_DIR$/Error Correcting Encoder-Decoder/task/build/generated/sources/headers/java" />
+            <option value="$PROJECT_DIR$/Error Correcting Encoder-Decoder/task/build/reports/tests" />
+            <option value="$PROJECT_DIR$/Error Correcting Encoder-Decoder/task/build/test-results" />
+            <option value="$PROJECT_DIR$/Error Correcting Encoder-Decoder/task/build/tmp" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Cinema" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Create cube" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Fill the matrix by numbers" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Find the corners" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Indexing rules" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Multidimensional array features" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Practical applications" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Reverse elements" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Rotate a rectangle array" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Symmetric matrix" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/The star figure" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/The third row" />
+            <option value="$PROJECT_DIR$/Topics/Multidimensional array/Theory" />
             <option value="$PROJECT_DIR$/util" />
           </set>
         </option>

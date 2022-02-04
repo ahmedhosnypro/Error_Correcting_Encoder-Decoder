@@ -1,7 +1,6 @@
 package correcter;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 public class ErrorEmulator {
     static ArrayList<String> createErrors(ArrayList<String> input) {
@@ -12,9 +11,9 @@ public class ErrorEmulator {
             char[] chars = s.toCharArray();
 
             int i = random.nextInt(8);
-            while (true){
+            while (true) {
                 char randomBit = (char) (random.nextInt(2) + 48);
-                if (chars[i] != randomBit){
+                if (chars[i] != randomBit) {
                     chars[i] = randomBit;
                     break;
                 }
@@ -42,9 +41,7 @@ public class ErrorEmulator {
                     break;
                 }
             }
-
         }
-
         return new String(chars);
     }
 }

@@ -3,12 +3,47 @@ custom_name: stage4
 files:
 - name: src/correcter/Main.java
   visible: true
-  text: |
+  text: |-
     package correcter;
+
+    import java.util.Scanner;
+
+    import static correcter.ErrorEmulator.createErrors;
 
     public class Main {
         public static void main(String[] args) {
-            System.out.println("Hello World!");
+            Scanner scanner = new Scanner(System.in);
+            System.out.println(createErrors(scanner.nextLine().trim()));
+        }
+    }
+  learner_created: false
+- name: src/correcter/ErrorEmulator.java
+  visible: true
+  text: |-
+    package correcter;
+
+    import java.util.Random;
+
+    public class ErrorEmulator {
+        static String createErrors(String input) {
+            final String randomList = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            final int N = randomList.length();
+
+            char[] chars = input.toCharArray();
+            Random random = new Random();
+            int l = chars.length;
+            for (int i = 0; i < l - 2; i += 3) {
+                int j = random.nextInt(2);
+
+                while (true) {
+                    char ch = randomList.charAt(random.nextInt(N));
+                    if (chars[i + j] != ch) {
+                        chars[i + j] = ch;
+                        break;
+                    }
+                }
+            }
+            return new String(chars);
         }
     }
   learner_created: false
@@ -24,13 +59,17 @@ files:
     import java.io.FileNotFoundException;
     import java.io.IOException;
     import java.util.ArrayList;
+    import java.util.Arrays;
     import java.util.List;
+    import java.util.Scanner;
 
     class TestClue {
+
         String input;
         String fileContent;
 
-        TestClue(String input, String fileContent) {
+        TestClue (String input, String fileContent) {
+
             this.input = input;
             this.fileContent = fileContent;
         }
@@ -43,22 +82,23 @@ files:
         private static File decoded = null;
 
         @Override
-        public List<TestCase<TestClue>> generate() {
-            TestClue[] testClues = new TestClue[] {
+        public List<TestCase<TestClue>> generate () {
+
+            TestClue[] testClues = new TestClue[]{
                 new TestClue("encode", "Eat more of these french buns!"),
-                new TestClue("send",   "Eat more of these french buns!"),
+                new TestClue("send", "Eat more of these french buns!"),
                 new TestClue("decode", "Eat more of these french buns!"),
 
                 new TestClue("encode", "$ome rand0m messAge"),
-                new TestClue("send",   "$ome rand0m messAge"),
+                new TestClue("send", "$ome rand0m messAge"),
                 new TestClue("decode", "$ome rand0m messAge"),
 
                 new TestClue("encode", "better call Saul 555-00-73!"),
-                new TestClue("send",   "better call Saul 555-00-73!"),
+                new TestClue("send", "better call Saul 555-00-73!"),
                 new TestClue("decode", "better call Saul 555-00-73!"),
 
                 new TestClue("encode", "5548172 6548 225147 23656595 5155"),
-                new TestClue("send",   "5548172 6548 225147 23656595 5155"),
+                new TestClue("send", "5548172 6548 225147 23656595 5155"),
                 new TestClue("decode", "5548172 6548 225147 23656595 5155"),
             };
 
@@ -75,7 +115,8 @@ files:
         }
 
         @Override
-        public CheckResult check(String reply, TestClue clue) {
+        public CheckResult check (String reply, TestClue clue) {
+
             String path = System.getProperty("user.dir");
 
             received = null;
@@ -124,7 +165,7 @@ files:
 
                 String encodedBinary = toBinary(encodedContent);
 
-                return new CheckResult(encodedBinary.equals(correctFileEncoded));
+                return checkEncodedStrings(encodedBinary, correctFileEncoded);
             }
 
             if (action.equals("send")) {
@@ -163,7 +204,6 @@ files:
             }
 
 
-
             if (action.equals("decode")) {
 
                 if (decoded == null) {
@@ -197,8 +237,18 @@ files:
                 String decodedBinary = toBinary(decodedContent);
 
                 if (!decodedBinary.equals(correctFileBinary)) {
-                    return new CheckResult(false, "The decoded text must match initial text!");
+                    String correctText = new String(clue.fileContent.getBytes());
+                    String userText = new String(decodedContent);
+
+                    if (userText.contains(correctText)) {
+                        return new CheckResult(false, "The decoded text must match initial text! Your" +
+                            " text may contain extra white spaces\nCorrect Text: " + correctText +
+                            "\nProgram Text: " + userText);
+                    }
+                    return new CheckResult(false, "The decoded text must match initial text!\nCorrect" +
+                        " Text: " + correctText + "\nProgram Text: " + userText);
                 }
+
 
                 return CheckResult.correct();
             }
@@ -206,7 +256,44 @@ files:
             throw new RuntimeException("Can't check the program");
         }
 
-        private static String toBinary(byte[] bytes) {
+        private CheckResult checkEncodedStrings (String encodedBinary, String correctFileEncoded) {
+
+            if (encodedBinary.isEmpty() && correctFileEncoded.isEmpty()) {
+                return CheckResult.correct();
+            }
+
+            if (encodedBinary.length() != correctFileEncoded.length()) {
+                return new CheckResult(false, "The number of bytes your program saves is wrong" +
+                    ".\nExpected: " + (correctFileEncoded
+                    .length() / 8) + "\nFound: " + (encodedBinary.length() / 8));
+
+            }
+
+            for (int i = 0; i < encodedBinary.length(); i += 8) {
+                int byteIndex = (i / 8) + 1;
+                String correctByte = correctFileEncoded.substring(i, i + 8);
+                String userByte = encodedBinary.substring(i, i + 8);
+
+                for (int j = 0; j < userByte.length(); j++) {
+                    char userChar = userByte.charAt(j);
+                    char correctChar = correctByte.charAt(j);
+
+                    if (userChar != correctChar) {
+                        return new CheckResult(false,
+                            "The file your program saves contains wrong bit in" +
+                                " byte position " + byteIndex + "\nCorrect " +
+                                "byte: " + correctByte + "\nProgram byte: " +
+                                userByte);
+                    }
+                }
+            }
+
+            return CheckResult.correct();
+
+        }
+
+        private static String toBinary (byte[] bytes) {
+
             StringBuilder sb = new StringBuilder(bytes.length * Byte.SIZE);
             for (int i = 0; i < Byte.SIZE * bytes.length; i++) {
                 sb.append((bytes[i / Byte.SIZE] << i % Byte.SIZE & 0x80) == 0 ? '0' : '1');
@@ -214,47 +301,53 @@ files:
             return sb.toString();
         }
 
-        private static byte[] fromBinary(String s) {
+        private static byte[] fromBinary (String s) {
+
             int sLen = s.length();
             byte[] toReturn = new byte[(sLen + Byte.SIZE - 1) / Byte.SIZE];
             char c;
-            for (int i = 0; i < sLen; i++)
-                if ((c = s.charAt(i)) == '1')
+            for (int i = 0; i < sLen; i++) {
+                if ((c = s.charAt(i)) == '1') {
                     toReturn[i / Byte.SIZE] = (byte) (toReturn[i / Byte.SIZE] | (0x80 >>> (i % Byte.SIZE)));
-                else if (c != '0')
+                } else if (c != '0') {
                     throw new IllegalArgumentException();
+                }
+            }
             return toReturn;
         }
 
-        private static void searchReceived() {
+        private static void searchReceived () {
+
             File file = new File("received.txt");
             if (file.exists()) {
                 received = file;
             }
         }
 
-        private static void searchEncoded() {
+        private static void searchEncoded () {
+
             File file = new File("encoded.txt");
             if (file.exists()) {
                 encoded = file;
             }
         }
 
-        private static void searchDecoded() {
+        private static void searchDecoded () {
+
             File file = new File("decoded.txt");
             if (file.exists()) {
                 decoded = file;
             }
         }
 
-        private String encodeFile(String binaryString) {
+        private String encodeFile (String binaryString) {
 
             String encoded = "";
 
             for (int i = 0; i < binaryString.length(); i += 3) {
 
                 int startSubIndex = i;
-                int stopSubIndex = Math.min(i+3, binaryString.length());
+                int stopSubIndex = Math.min(i + 3, binaryString.length());
 
                 String currSub = binaryString.substring(startSubIndex, stopSubIndex);
 
@@ -263,12 +356,12 @@ files:
                 if (currSub.length() == 3) {
                     encodedPart =
                         currSub.substring(0, 1).repeat(2) +
-                        currSub.substring(1, 2).repeat(2) +
-                        currSub.substring(2, 3).repeat(2);
+                            currSub.substring(1, 2).repeat(2) +
+                            currSub.substring(2, 3).repeat(2);
                 } else if (currSub.length() == 2) {
                     encodedPart =
                         currSub.substring(0, 1).repeat(2) +
-                        currSub.substring(1, 2).repeat(2) + "00";
+                            currSub.substring(1, 2).repeat(2) + "00";
                 } else if (currSub.length() == 1) {
                     encodedPart =
                         currSub.substring(0, 1).repeat(2) + "0000";
@@ -302,20 +395,22 @@ files:
             return encoded;
         }
 
-        private CheckResult checkDifference(String output, String correct) {
-            if (output.isEmpty() && correct.isEmpty()) return CheckResult.correct();
+        private CheckResult checkDifference (String output, String correct) {
+
+            if (output.isEmpty() && correct.isEmpty()) {
+                return CheckResult.correct();
+            }
 
             if (output.length() != correct.length()) {
-                return new CheckResult(false,
-                    "The program was expected to output " +
-                        correct.length() / 8 +
-                        " bytes, but output " +
-                        output.length() / 8);
+                return new CheckResult(false, "The number of bytes your program saves is wrong" +
+                    ".\nExpected: " + (correct.length() / 8) + "\nFound: " + (output.length() / 8));
             }
 
             for (int i = 0; i < output.length(); i += 8) {
-                String currOutputByte = output.substring(i, i+8);
-                String currCorrectByte = correct.substring(i, i+8);
+                String currOutputByte = output.substring(i, i + 8);
+                String currCorrectByte = correct.substring(i, i + 8);
+
+                int byteIndex = (i / 8) + 1;
 
                 int difference = 0;
                 for (int j = 0; j < currCorrectByte.length(); j++) {
@@ -329,12 +424,19 @@ files:
 
                 if (difference == 0) {
                     return new CheckResult(false,
-                        "One of bytes from the input stayed the same but should be changed");
+                        "One of the bytes from the input stayed the same but " +
+                            "should be changed. Byte " + byteIndex + ". " +
+                            "Your program should simulate errors by changing one" +
+                            " bit per byte.\nCorrect byte: " + currCorrectByte +
+                            "\nProgram byte: " + currOutputByte);
                 }
 
                 if (difference != 1) {
                     return new CheckResult(false,
-                        "One of bytes from the input was changes in more than one bit");
+                        "One of bytes from the input was changes in more than one " +
+                            "bit. Byte " + byteIndex + ". Your program should simulate" +
+                            " errors by changing one bit per byte\nCorrect byte: " +
+                            "" + currCorrectByte + "\nProgram byte: " + currOutputByte);
                 }
             }
 
@@ -343,100 +445,59 @@ files:
     }
 
   learner_created: false
-- name: src/correcter/send.txt
-  visible: true
-  text: Simple text.
-  learner_created: true
-- name: src/correcter/ErrorEmulator.java
+- name: src/correcter/Coder.java
   visible: true
   text: |-
     package correcter;
 
-    import java.util.*;
-    import java.util.stream.Collectors;
-
-    public class ErrorEmulator {
-        static String createErrors(String input) {
-            final String randomList = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            final int N = randomList.length();
-
-            char[] chars = input.toCharArray();
-            Random random = new Random();
-            int l = chars.length;
-            for (int i = 0; i < l - 2; i += 3) {
-                int j = random.nextInt(2);
-
-                while (true) {
-                    char ch = randomList.charAt(random.nextInt(N));
-                    if (chars[i + j] != ch) {
-                        chars[i + j] = ch;
-                        break;
-                    }
-                }
-
-            }
-
-            return new String(chars);
-        }
-
-        static ArrayList<String> createErrors(ArrayList<String> input) {
-            Random random = new Random();
-            ArrayList<String> output = new ArrayList<>();
-            String[] strings = input.toArray(new String[0]);
-            for (String s : strings) {
-                char[] chars = s.toCharArray();
-
-                int i = random.nextInt(7) + 1;
-                while (true){
-                    char randomBit = (char) (random.nextInt(2) + 48);
-                    if (chars[i] != randomBit){
-                        chars[i] = randomBit;
-                        break;
-                    }
-                }
-                output.add(new String(chars));
-            }
-
-            return output;
-        }
-    }
-  learner_created: true
-- name: src/correcter/FileReceiver.java
-  visible: true
-  text: |
-    package correcter;
-
-    import java.io.*;
     import java.util.ArrayList;
-    import java.util.Arrays;
-    import java.util.List;
-    import java.util.Scanner;
-    import java.util.stream.Collectors;
 
-    public class FileReceiver {
+    public class Coder {
+        static String triple(String input) {
+            char[] chars = input.toCharArray();
+            StringBuilder sb = new StringBuilder();
+            for (char ch : chars) {
+                for (int i = 0; i < 3; i++) {
+                    sb.append(ch);
+                }
+            }
+            return sb.toString();
+        }
 
+        public static ArrayList<String> toBitsArray(byte[] bytes) {
+            ArrayList<String> list = new ArrayList<String>();
+            for (byte b : bytes) {
+                list.add(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
+            }
+            return list;
+        }
 
+        public static ArrayList<String> toHexArray(byte[] bytes) {
+            ArrayList<String> list = new ArrayList<String>();
+            for (byte b : bytes) {
+                list.add(String.format("%02X", b));
+            }
+            return list;
+        }
     }
   learner_created: true
 - name: src/correcter/Decoder.java
   visible: true
-  text: |
+  text: |-
     package correcter;
 
     import java.util.ArrayList;
 
     public class Decoder {
-        static String decode(String badString){
+        static String decode(String badString) {
             char[] chars = badString.toCharArray();
             StringBuilder sb = new StringBuilder();
-            for (int i = 1; i < chars.length - 1; i += 3){
-                if (chars[i] == chars[i + 1]){
+            for (int i = 1; i < chars.length - 1; i += 3) {
+                if (chars[i] == chars[i + 1]) {
                     sb.append(chars[i + 1]);
-                }
-                else if (chars[i] == chars[i - 1]){
+                } else if (chars[i] == chars[i - 1]) {
                     sb.append(chars[i - 1]);
-                }
-                else if (chars[i - 1] == chars[i + 1]){
+                } else if (chars[i - 1] == chars[i + 1]) {
                     sb.append(chars[i - 1]);
                 }
 
@@ -445,9 +506,9 @@ files:
             return sb.toString();
         }
 
-        static byte[] bitsToBytes(ArrayList<String> input){
+        static byte[] bitsToBytes(ArrayList<String> input) {
             byte[] bytes = new byte[input.size()];
-            for (int i=0; i<input.size(); i++){
+            for (int i = 0; i < input.size(); i++) {
                 String string = input.get(i);
                 int l = Integer.parseInt(string);
                 bytes[i] = Byte.parseByte(string, 2);
@@ -455,9 +516,9 @@ files:
             return bytes;
         }
 
-        static String bytesToString(byte[] bytes){
+        static String bytesToString(byte[] bytes) {
             StringBuilder sb = new StringBuilder();
-            for (byte b: bytes){
+            for (byte b : bytes) {
                 sb.append(b).append(" ");
             }
 
@@ -465,17 +526,7 @@ files:
         }
     }
   learner_created: true
-- name: received.txt
-  visible: true
-  text: "14t9qw:!7%6\x18\03\"7\x11$5`:;\x16771y1\"=01u"
-  learner_created: true
-- name: src/correcter/received.txt
-  visible: true
-  learner_created: true
 - name: src/correcter/Encoder.java
-  visible: true
-  learner_created: true
-- name: src/correcter/encoded.txt
   visible: true
   learner_created: true
 - name: src/correcter/Mode.java
@@ -487,18 +538,19 @@ files:
 - name: src/correcter/Sender.java
   visible: true
   learner_created: true
-- name: src/correcter/decoded.txt
-  visible: true
-  learner_created: true
 - name: decoded.txt
   visible: true
   learner_created: true
 - name: encoded.txt
   visible: true
   learner_created: true
-feedback_link: https://hyperskill.org/projects/58/stages/315/implement#comment
+- name: received.txt
+  visible: true
+  learner_created: true
+feedback_link: https://hyperskill.org/learn/step/5457#comment
 status: Solved
 feedback:
-  message: Congratulations!
-  time: Sun, 13 Jun 2021 13:39:23 UTC
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">JetBrains
+    Academy</a> to continue learning.
+  time: Fri, 04 Feb 2022 04:54:02 UTC
 record: 4

@@ -271,13 +271,13 @@ public class CorrecterTest extends StageTest<TestClue> {
 
             encodedPart =
                 (parityBit1 % 2 == 1? "1": "0") +
-                (parityBit2 % 2 == 1? "1": "0") +
-                currSub.charAt(0) +
-                (parityBit4 % 2 == 1? "1": "0") +
-                currSub.charAt(1) +
-                currSub.charAt(2) +
-                currSub.charAt(3) +
-                "0";
+                    (parityBit2 % 2 == 1? "1": "0") +
+                    currSub.charAt(0) +
+                    (parityBit4 % 2 == 1? "1": "0") +
+                    currSub.charAt(1) +
+                    currSub.charAt(2) +
+                    currSub.charAt(3) +
+                    "0";
 
             encoded += encodedPart;
         }

@@ -1,3 +1,0 @@
-CorrecterTest.java
- CorrecterTest
- TestClue

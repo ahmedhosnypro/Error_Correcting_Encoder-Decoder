@@ -59,12 +59,12 @@ files:
         }
 
         private CheckResult checkMatches(String userOutput,
-                                     String correctOutput) {
+                                         String correctOutput) {
 
             if (userOutput.length() != correctOutput.length()) {
                 return new CheckResult(false,
                     "Input length and output length should be the same!\n" +
-                        "Input length: " + correctOutput.length() +
+                        "Input length: " + correctOutput.length() + "\n" +
                         "Output length: " + userOutput.length());
             }
 
@@ -103,9 +103,9 @@ files:
 - name: src/correcter/ErrorEmulator.java
   visible: true
   learner_created: true
-feedback_link: https://hyperskill.org/projects/58/stages/312/implement#comment
+feedback_link: https://hyperskill.org/learn/step/5454#comment
 status: Solved
 feedback:
   message: Congratulations!
-  time: Fri, 11 Jun 2021 13:42:05 UTC
+  time: Thu, 03 Feb 2022 16:18:47 UTC
 record: 1

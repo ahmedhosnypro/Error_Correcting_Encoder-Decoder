@@ -194,7 +194,6 @@ public class Decoder {
                 }
             }
         }
-
         if (out.length() == 8) {
             output.add(out.toString());
         }
@@ -214,7 +213,6 @@ public class Decoder {
                 n -= 256;
             bytes[i] = (byte) n;
         }
-
         return bytes;
     }
 
@@ -224,7 +222,6 @@ public class Decoder {
             char ch = (char) b;
             sb.append(ch);
         }
-
         return sb.toString().trim();
     }
 
@@ -239,9 +236,7 @@ public class Decoder {
             } else if (chars[i - 1] == chars[i + 1]) {
                 sb.append(chars[i - 1]);
             }
-
         }
-
         return sb.toString();
     }
 }

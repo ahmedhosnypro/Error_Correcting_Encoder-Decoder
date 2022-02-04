@@ -3,12 +3,47 @@ custom_name: stage5
 files:
 - name: src/correcter/Main.java
   visible: true
-  text: |
+  text: |-
     package correcter;
+
+    import java.util.Scanner;
+
+    import static correcter.ErrorEmulator.createErrors;
 
     public class Main {
         public static void main(String[] args) {
-            System.out.println("Hello World!");
+            Scanner scanner = new Scanner(System.in);
+            System.out.println(createErrors(scanner.nextLine().trim()));
+        }
+    }
+  learner_created: false
+- name: src/correcter/ErrorEmulator.java
+  visible: true
+  text: |-
+    package correcter;
+
+    import java.util.Random;
+
+    public class ErrorEmulator {
+        static String createErrors(String input) {
+            final String randomList = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+            final int N = randomList.length();
+
+            char[] chars = input.toCharArray();
+            Random random = new Random();
+            int l = chars.length;
+            for (int i = 0; i < l - 2; i += 3) {
+                int j = random.nextInt(2);
+
+                while (true) {
+                    char ch = randomList.charAt(random.nextInt(N));
+                    if (chars[i + j] != ch) {
+                        chars[i + j] = ch;
+                        break;
+                    }
+                }
+            }
+            return new String(chars);
         }
     }
   learner_created: false
@@ -288,13 +323,13 @@ files:
 
                 encodedPart =
                     (parityBit1 % 2 == 1? "1": "0") +
-                    (parityBit2 % 2 == 1? "1": "0") +
-                    currSub.charAt(0) +
-                    (parityBit4 % 2 == 1? "1": "0") +
-                    currSub.charAt(1) +
-                    currSub.charAt(2) +
-                    currSub.charAt(3) +
-                    "0";
+                        (parityBit2 % 2 == 1? "1": "0") +
+                        currSub.charAt(0) +
+                        (parityBit4 % 2 == 1? "1": "0") +
+                        currSub.charAt(1) +
+                        currSub.charAt(2) +
+                        currSub.charAt(3) +
+                        "0";
 
                 encoded += encodedPart;
             }
@@ -343,80 +378,9 @@ files:
     }
 
   learner_created: false
-- name: src/correcter/ErrorEmulator.java
-  visible: true
-  text: |-
-    package correcter;
-
-    import java.util.*;
-    import java.util.stream.Collectors;
-
-    public class ErrorEmulator {
-        static ArrayList<String> createErrors(ArrayList<String> input) {
-            Random random = new Random();
-            ArrayList<String> output = new ArrayList<>();
-            String[] strings = input.toArray(new String[0]);
-            for (String s : strings) {
-                char[] chars = s.toCharArray();
-
-                int i = random.nextInt(8);
-                while (true){
-                    char randomBit = (char) (random.nextInt(2) + 48);
-                    if (chars[i] != randomBit){
-                        chars[i] = randomBit;
-                        break;
-                    }
-                }
-                output.add(new String(chars));
-            }
-
-            return output;
-        }
-
-        static String createErrors(String input) {
-            final String randomList = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            final int N = randomList.length();
-
-            char[] chars = input.toCharArray();
-            Random random = new Random();
-            int l = chars.length;
-            for (int i = 0; i < l - 2; i += 3) {
-                int j = random.nextInt(2);
-
-                while (true) {
-                    char ch = randomList.charAt(random.nextInt(N));
-                    if (chars[i + j] != ch) {
-                        chars[i + j] = ch;
-                        break;
-                    }
-                }
-
-            }
-
-            return new String(chars);
-        }
-    }
-  learner_created: true
-- name: src/correcter/FileReceiver.java
-  visible: true
-  text: |
-    package correcter;
-
-    import java.io.*;
-    import java.util.ArrayList;
-    import java.util.Arrays;
-    import java.util.List;
-    import java.util.Scanner;
-    import java.util.stream.Collectors;
-
-    public class FileReceiver {
-
-
-    }
-  learner_created: true
 - name: src/correcter/Mode.java
   visible: true
-  text: |
+  text: |-
     package correcter;
 
     public enum Mode {
@@ -427,7 +391,7 @@ files:
   learner_created: true
 - name: src/correcter/Encoder.java
   visible: true
-  text: |
+  text: |-
     package correcter;
 
     import java.io.File;
@@ -440,16 +404,16 @@ files:
     import static correcter.Decoder.bytesToString;
 
     public class Encoder {
-        public static void encode(){
+        public static void encode() {
     //        File sendFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/send.txt");
             File sendFile = new File("send.txt");
     //        File encodedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/encoded.txt");
             File encodedFile = new File("encoded.txt");
-            try(FileInputStream sendFileInputStream = new FileInputStream(sendFile);
-                FileOutputStream encodedFileOutputStream = new FileOutputStream(encodedFile);){
+            try (FileInputStream sendFileInputStream = new FileInputStream(sendFile);
+                 FileOutputStream encodedFileOutputStream = new FileOutputStream(encodedFile);) {
 
                 //read send file
-                byte[] bytes  = sendFileInputStream.readAllBytes();
+                byte[] bytes = sendFileInputStream.readAllBytes();
                 ArrayList<String> hex = toHexArray(bytes);
                 ArrayList<String> bin = toBitsArray(bytes);
 
@@ -486,38 +450,38 @@ files:
             }
         }
 
-        public static ArrayList<String> encode(ArrayList<String> bits){
+        public static ArrayList<String> encode(ArrayList<String> bits) {
             StringBuilder sb = new StringBuilder();
             ArrayList<String> output = new ArrayList<String>();
-            for (String s: bits){
+            for (String s : bits) {
                 sb.append(s);
             }
 
             int length = sb.length();
             int bound = length % 3;
 
-            for (int i=0; i<sb.length()-bound; i +=3){
+            for (int i = 0; i < sb.length() - bound; i += 3) {
                 StringBuilder sb1 = new StringBuilder();
 
                 char ch1 = sb.charAt(i);
-                char ch2 = sb.charAt(i+1);
-                char ch3 = sb.charAt(i+2);
+                char ch2 = sb.charAt(i + 1);
+                char ch3 = sb.charAt(i + 2);
 
                 sb1.append(String.valueOf(ch1).repeat(2));
                 sb1.append(String.valueOf(ch2).repeat(2));
                 sb1.append(String.valueOf(ch3).repeat(2));
 
 
-                int n1  = ch1 - 48;
-                int n2  = ch2 - 48;
-                int n3  = ch3 - 48;
+                int n1 = ch1 - 48;
+                int n2 = ch2 - 48;
+                int n3 = ch3 - 48;
                 int n4 = n1 ^ n2 ^ n3;
 
                 sb1.append(String.valueOf(n4).repeat(2));
                 output.add(sb1.toString());
             }
 
-            if (bound == 1){
+            if (bound == 1) {
                 StringBuilder sb1 = new StringBuilder();
                 char ch = sb.charAt(sb.length() - bound);
                 int n1 = ch - 48;
@@ -527,9 +491,7 @@ files:
                 sb1.append(String.valueOf(0).repeat(4));
                 sb1.append(String.valueOf(m).repeat(2));
                 output.add(sb1.toString());
-            }
-
-            else if (bound == 2){
+            } else if (bound == 2) {
                 StringBuilder sb1 = new StringBuilder();
                 char ch1 = sb.charAt(sb.length() - 2);
                 char ch2 = sb.charAt(sb.length() - 1);
@@ -548,9 +510,9 @@ files:
             return output;
         }
 
-        public static ArrayList<String> toBitsArray(byte[] bytes){
+        public static ArrayList<String> toBitsArray(byte[] bytes) {
             ArrayList<String> list = new ArrayList<String>();
-            for (byte b: bytes){
+            for (byte b : bytes) {
                 list.add(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
             }
             return list;
@@ -558,18 +520,18 @@ files:
 
         public static ArrayList<String> toHexArray(byte[] bytes) {
             ArrayList<String> list = new ArrayList<String>();
-            for (byte b: bytes){
+            for (byte b : bytes) {
                 list.add(String.format("%02X", b));
             }
 
             return list;
         }
 
-        static String triple(String input){
+        static String triple(String input) {
             char[] chars = input.toCharArray();
             StringBuilder sb = new StringBuilder();
-            for (char ch: chars){
-                for (int i = 0; i < 3; i++){
+            for (char ch : chars) {
+                for (int i = 0; i < 3; i++) {
                     sb.append(ch);
                 }
             }
@@ -577,19 +539,47 @@ files:
         }
     }
   learner_created: true
-- name: received.txt
+- name: src/correcter/Coder.java
   visible: true
-  text: "/�;87���/�4\x02˰\x7f���;�\x01��\a�\x13\x1c�\x10�\x01�@\x04\x1c\v\b�\x13\v\
-    ȳ=\x04���\a��s \x10�\x13OC�=, Ќ/��82��\a\a�77\x10@�\x0eC1|����"
-  learner_created: true
-- name: src/correcter/send.txt
-  visible: true
-  text: $ome rand0m messAge
+  text: |-
+    package correcter;
+
+    import java.util.ArrayList;
+
+    public class Coder {
+        static String triple(String input) {
+            char[] chars = input.toCharArray();
+            StringBuilder sb = new StringBuilder();
+            for (char ch : chars) {
+                for (int i = 0; i < 3; i++) {
+                    sb.append(ch);
+                }
+            }
+            return sb.toString();
+        }
+
+        public static ArrayList<String> toBitsArray(byte[] bytes) {
+            ArrayList<String> list = new ArrayList<String>();
+            for (byte b : bytes) {
+                list.add(String.format("%8s", Integer.toBinaryString(b & 0xFF)).replace(' ', '0'));
+            }
+            return list;
+        }
+
+        public static ArrayList<String> toHexArray(byte[] bytes) {
+            ArrayList<String> list = new ArrayList<String>();
+            for (byte b : bytes) {
+                list.add(String.format("%02X", b));
+            }
+            return list;
+        }
+    }
   learner_created: true
 - name: src/correcter/Starter.java
   visible: true
-  text: |
+  text: |-
     package correcter;
+
     import java.util.Scanner;
 
     import static correcter.Encoder.*;
@@ -597,7 +587,7 @@ files:
     import static correcter.Sender.send;
 
     public class Starter {
-        public static void start(){
+        public static void start() {
             Scanner scanner = new Scanner(System.in);
             System.out.print("Write a mode: ");
             String input = scanner.nextLine().trim().toUpperCase();
@@ -615,37 +605,17 @@ files:
                         decode();
                         break;
                     default:
-                            break;
+                        break;
                 }
-            }
-            catch (IllegalArgumentException e){
+            } catch (IllegalArgumentException e) {
                 System.out.print("check your input");
             }
         }
-
     }
-  learner_created: true
-- name: src/correcter/encoded.txt
-  visible: true
-  text: "\x0f\x0f\0�����<\x0f33\0\x0f�3<\03��\x0f��\x0f�\0����\0<<3�3��<<���\0���\
-    <\x0f3"
-  learner_created: true
-- name: decoded.txt
-  visible: true
-  text: 5548172 6548 225147 23656595 5155
-  learner_created: true
-- name: encoded.txt
-  visible: true
-  text: "\x0f�3<3���\x0f�\0<\0���\x0f��3\0\0��\x0f�3<3\0�\0\x0f\0\0<\x0f\0�3\x0f�\
-    3<\0���\x0f��3\0\0�3\x0f��<<\0��\x0f��<3��\x0f\x0f�33\0\0��\x0f�3<3���"
-  learner_created: true
-- name: src/correcter/received.txt
-  visible: true
-  text: "\x0e�\x02à÷LÜÄ4\ns7\x04\vp;|\x01³ô\x7f\vÁÁ�Ë€Ð°ƒÇ@\x1c,#ø³Œô>>CpÓ€ŒÁß>\vs"
   learner_created: true
 - name: src/correcter/Sender.java
   visible: true
-  text: |
+  text: |-
     package correcter;
 
     import java.io.*;
@@ -656,17 +626,17 @@ files:
     import static correcter.ErrorEmulator.*;
 
     public class Sender {
-        static void send(){
+        static void send() {
             File encodedFile = new File("encoded.txt");
     //        File encodedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/encoded.txt");
     //        File receivedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/received.txt");
             File receivedFile = new File("received.txt");
-            try(FileInputStream encodedFileInputStream = new FileInputStream(encodedFile);
-                FileOutputStream receivedFileOutputStream = new FileOutputStream(receivedFile);) {
+            try (FileInputStream encodedFileInputStream = new FileInputStream(encodedFile);
+                 FileOutputStream receivedFileOutputStream = new FileOutputStream(receivedFile);) {
 
                 //read encodedFile
                 //**************************//
-                byte[] encodedBytes  = encodedFileInputStream.readAllBytes();
+                byte[] encodedBytes = encodedFileInputStream.readAllBytes();
                 //**************************//
 
                 ArrayList<String> encodedHex = toHexArray(encodedBytes);
@@ -707,10 +677,6 @@ files:
         }
     }
   learner_created: true
-- name: src/correcter/decoded.txt
-  visible: true
-  text: $ome rand0m messAge
-  learner_created: true
 - name: src/correcter/Decoder.java
   visible: true
   text: |-
@@ -722,17 +688,17 @@ files:
     import static correcter.Encoder.*;
 
     public class Decoder {
-        public static void decode(){
+        public static void decode() {
     //        File receivedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/received.txt");
             File receivedFile = new File("received.txt");
     //        File decodedFile = new File("Error Correcting Encoder-Decoder/task/src/correcter/decoded.txt");
             File decodedFile = new File("decoded.txt");
-            try(FileInputStream receivedFileInputStream = new FileInputStream(receivedFile);
-                FileOutputStream decodedFileOutputStream = new FileOutputStream(decodedFile);){
+            try (FileInputStream receivedFileInputStream = new FileInputStream(receivedFile);
+                 FileOutputStream decodedFileOutputStream = new FileOutputStream(decodedFile);) {
 
                 //read encodedFile
                 //**************************//
-                byte[] receivedBytes  = receivedFileInputStream.readAllBytes();
+                byte[] receivedBytes = receivedFileInputStream.readAllBytes();
                 //**************************//
 
                 ArrayList<String> receivedHex = toHexArray(receivedBytes);
@@ -763,7 +729,7 @@ files:
                 decodedHex.forEach(s -> System.out.print(s + " "));
                 System.out.println();
                 System.out.println("text view: " + bytesToString(decodedBytes));
-                 //*/
+                //*/
 
                 //**************************//
                 decodedFileOutputStream.write(bitsToBytes(decodedBits));
@@ -879,10 +845,19 @@ files:
         }
     }
   learner_created: true
-feedback_link: https://hyperskill.org/projects/58/stages/316/implement#comment
+- name: decoded.txt
+  visible: true
+  learner_created: true
+- name: encoded.txt
+  visible: true
+  learner_created: true
+- name: received.txt
+  visible: true
+  learner_created: true
+feedback_link: https://hyperskill.org/learn/step/5458#comment
 status: Solved
 feedback:
-  message: Well done! You finished the project. Select a new project on <a href="https://hyperskill.org/projects">JetBrains
+  message: Well done! You've finished the project. Select a new project on <a href="https://hyperskill.org/projects">JetBrains
     Academy</a> to continue learning.
-  time: Sun, 13 Jun 2021 17:57:56 UTC
-record: -1
+  time: Fri, 04 Feb 2022 04:56:09 UTC
+record: 5
